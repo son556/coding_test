@@ -2,22 +2,18 @@
 
 //제출 시  #include <bits/stdc++.h>
 using namespace std;
-int a[10];
-int b[10][10];
-
+queue<int> q;
 int main()
 {
-	fill(a,a + 10, 100);
-	for(int i = 0; i < 10; i++){ 
-		cout << a[i] << " ";
-	}
-	cout << '\n';
-	fill(&b[0][0], &b[0][0] + 10 * 10, 2); 
-	for(int i = 0; i < 10; i++){
-		for(int j = 0; j < 10; j++){ 
-			cout << b[i][j] << " ";
-		}
-		cout << '\n'; 
-	}
+	deque<int> dq;
+	dq.push_front(1);
+	dq.push_back(2);
+	dq.push_back(3);
+	cout << dq.front() << "\n";
+	cout << dq.back() << '\n';
+	cout << "size: " << dq.size() << '\n';
+	dq.pop_back();
+	dq.pop_front();
+	cout << dq.size() << dq.front() << "\n";
 	return 0;
-}
+} // 100

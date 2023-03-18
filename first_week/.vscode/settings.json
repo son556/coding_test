@@ -1,6 +1,8 @@
 {
 	"files.associations": {
 		"history.h": "c",
-		"iostream": "cpp"
+		"iostream": "cpp",
+		"vector": "cpp",
+		"map": "cpp"
 	}
 }
