@@ -2,18 +2,13 @@
 
 //제출 시  #include <bits/stdc++.h>
 using namespace std;
-queue<int> q;
-int main()
+vector<int> v(3, 0); 
+void go(vector<int> v)
 {
-	deque<int> dq;
-	dq.push_front(1);
-	dq.push_back(2);
-	dq.push_back(3);
-	cout << dq.front() << "\n";
-	cout << dq.back() << '\n';
-	cout << "size: " << dq.size() << '\n';
-	dq.pop_back();
-	dq.pop_front();
-	cout << dq.size() << dq.front() << "\n";
-	return 0;
-} // 100
+v[1] = 100; 
+}
+int main()
+{ 
+	go(v);
+	for(int i : v) cout << i << '\n'; 
+} // 113
