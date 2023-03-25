@@ -6,17 +6,12 @@
 /*   By: chanson <chanson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/24 14:06:34 by chanson           #+#    #+#             */
-/*   Updated: 2023/03/24 21:11:14 by chanson          ###   ########.fr       */
+/*   Updated: 2023/03/25 21:38:44 by chanson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "test.h"
-
-void	fatal_error()
-{
-	ft_putstr("error fatal\n");
-	exit(1);
-}
+#include <stdio.h>
 
 int	ft_strlen(char *str)
 {
@@ -28,6 +23,17 @@ int	ft_strlen(char *str)
 	while (str[i])
 		i++;
 	return (i);
+}
+
+void	ft_putstr(char *str)
+{
+	write(2, str, ft_strlen(str));
+}
+
+void	fatal_error()
+{
+	ft_putstr("error fatal\n");
+	exit(1);
 }
 
 char	*ft_strcpy(char *str)
@@ -54,6 +60,8 @@ void	ft_free(char **str)
 	int	i;
 
 	i = 0;
+	if (str == NULL)
+		return ;
 	while (str[i])
 	{
 		free(str[i]);
@@ -89,7 +97,7 @@ char	**ft_strjoin(char **str, char *string)
 		index = 0;
 		while (str[index])
 		{
-			temp[index] = str[index];
+			temp[index] = ft_strcpy(str[index]);
 			index++;
 		}
 		ft_free(str);
@@ -97,116 +105,283 @@ char	**ft_strjoin(char **str, char *string)
 	return (temp);
 }
 
-void	execute_cmd(t_cmd *cmds, char **cmd, int start, int i)
+char	**ft_strscpy_index(char **str, int start, int end)
 {
-	if (start == 0)
+	int		index;
+	char	**temp;
+
+	index = start;
+	temp = NULL;
+	while (index < end)
 	{
-		if (close(cmds->pipe[start][0]) == -1)
-			fatal_error();
-		if (dup2(cmds->pipe[start][1], STDOUT_FILENO) == 1)
-			fatal_error();
+		temp = ft_strjoin(temp, str[index]);
+		index++;
+	}
+	return (temp);
+}
+
+void	exe_cd(int argc, char **argv)
+{
+	if (argc > 3)
+	{
+		write(2, "error: cd: bad arguments\n", 25);
+		exit(1);
+	}
+	if (chdir(argv[2]) < 0)
+	{
+		write(2, "error: cd: cannot change directory to ", 38);
+		write(2, argv[2], ft_strlen(argv[2]));
+		write(2, "\n", 1);
 	}
 }
 
-void	exe_cmd(char **cmd, char **env)
+void	execute_no_pipe(t_cmd *cmd, char **argv, char **envp)
 {
-	int		i;
-	int		start;
-	t_cmd	cmds;
+	int		idx;
+	char	**command;
 
-	i = -1;
-	cmds.pipe_cnt = 0;
-	cmds.cmd = NULL;
-	while (cmd[++i])
+	idx = -1;
+	command = NULL;
+	while (argv[++idx])
 	{
-		if (strcmp(cmd[i], "|") == 0)
-			cmds.pipe_cnt++;
+		if (strcmp(argv[idx], ";") == -1)
+			break ;
+		command = ft_strjoin(command, argv[idx]);
 	}
-	if (cmds.pipe_cnt == 0)
-		execute_no_pipe(&cmds, cmd);
+	cmd->pid[0] = fork();
+	if (cmd->pid[0] < 0)
+		fatal_error();
+	if (cmd->pid[0] == 0)
+	{
+		cmd->cmd = ft_strscpy_index(argv, 0, idx);
+		if (execve(cmd->cmd[0], cmd->cmd, envp) < 0)
+		{
+			ft_free(cmd->cmd);
+			write(2, "error: cannot execute ", 22);
+			write(2, cmd->cmd[0], ft_strlen(cmd->cmd[0]));
+			write(2, "\n", 1);
+		}
+	}
 	else
 	{
-		cmds.pipe = (int **)malloc(sizeof(int *) * cmds.pipe_cnt);
-		if (cmds.pipe == NULL)
+		ft_free(command);
+		if (waitpid(cmd->pid[0], 0, 0) == -1)
 			fatal_error();
-		i = -1;
-		while (++i < cmds.pipe_cnt)
+	}
+}
+
+void	fork_first(t_cmd *cmd, char **command, char **envp, int idx)
+{
+	int	i;
+
+	cmd->pid[idx] = fork();
+	if (cmd->pid[idx] < 0)
+		fatal_error();
+	else if (cmd->pid[idx] == 0)
+	{
+		i = 0;
+		while (++i < cmd->pipe_cnt)
 		{
-			cmds.pipe[i] = (int *)malloc(sizeof(int) * 2);
-			if (cmds.pipe[i] == NULL)
+			if (close(cmd->pipe[i][0]) < 0 || close(cmd->pipe[i][1]) < 0)
 				fatal_error();
 		}
-		cmds.pid = (pid_t *)malloc(sizeof(pid_t) * (cmds.pipe_cnt + 1));
-		if (cmds.pid == NULL)
+		if (dup2(cmd->pipe[idx][1], STDOUT_FILENO) < 0)
 			fatal_error();
-		start = 0;
-		i = -1;
-		while (++i < cmds.pipe_cnt)
+		if (close(cmd->pipe[idx][1]) < 0 || close(cmd->pipe[idx][0]) < 0)
+			fatal_error();
+		if (execve(command[0], command, envp) < 0)
 		{
-			if (pipe(cmds.pipe[i]) == -1)
-				fatal_error();
-		}
-		while (cmd[i])
-		{
-			if (strcmp(cmd[i], "|") == 0)
-			{
-				cmds.pid[start] = fork();
-				if (cmds.pid[start] == -1)
-					fatal_error();
-				if (cmds.pid[start])
-					execute_cmd(&cmds, cmd, start, i);
-				start = i;
-			}
-			else if (cmd[i + 1] == NULL)
-			{
-				cmds.pid[start] = fork();
-				if (cmds.pid[start] == -1)
-					fatal_error();
-				if (cmds.pid[start] == 0)
-					execute_cmd(&cmds, cmd, start, i);
-			}
-			i++;
-		}
-		i = -1;
-		while (++i < cmds.pipe_cnt + 1)
-		{
-			if (i < cmds.pipe_cnt)
-			{
-				if (close(cmds.pipe[i][0]) == -1)
-					fatal_error();
-				if (close(cmds.pipe[i][1]) == -1)
-					fatal_error();
-			}
-			if (waitpid(cmds.pid[i], 0, 0) == -1)
-				fatal_error();
+			ft_putstr("error: cannot execute ");
+			ft_putstr(command[0]);
+			ft_putstr("\n");
+			exit(1);
 		}
 	}
 }
 
-int	main(int argc, char **argv, char **env)
+void	fork_mid(t_cmd *cmd, char **command, char **envp, int idx)
 {
-	char	**cmd;
+	int	i;
+
+	cmd->pid[idx] = fork();
+	if (cmd->pid[idx] < 0)
+		fatal_error();
+	else if (cmd->pid[idx] == 0)
+	{
+		i = -1;
+		while (++i < cmd->pipe_cnt)
+		{
+			if (i == idx || i == idx - 1)
+				continue ;
+			if (close(cmd->pipe[i][0]) < 0 || close(cmd->pipe[i][1]) < 0)
+				fatal_error();
+		}
+		if (close(cmd->pipe[idx][0]) < 0 || close(cmd->pipe[idx - 1][1]) < 0)
+			fatal_error();
+		if (dup2(cmd->pipe[idx - 1][0], STDIN_FILENO) < 0)
+			fatal_error();
+		if (dup2(cmd->pipe[idx][1], STDOUT_FILENO) < 0)
+			fatal_error();
+		if (close(cmd->pipe[idx - 1][0]) < 0 || close(cmd->pipe[idx][1]) < 0)
+			fatal_error();
+		if (execve(command[0], command, envp) < 0)
+		{
+			ft_putstr("error: cannot execute ");
+			ft_putstr(command[0]);
+			ft_putstr("\n");
+			exit(1);
+		}
+	}
+}
+
+void	fork_last(t_cmd *cmd, char **command, char **envp, int idx)
+{
+	int	i;
+
+	cmd->pid[idx] = fork();
+	if (cmd->pid[idx] < 0)
+		fatal_error();
+	else if (cmd->pid[idx] == 0)
+	{
+		i = -1;
+		while (++i < cmd->pipe_cnt - 1)
+		{
+			if (close(cmd->pipe[i][0]) < 0 || close(cmd->pipe[i][1]) < 0)
+				fatal_error();
+		}
+		if (close(cmd->pipe[idx - 1][1]) < 0)
+			fatal_error();
+		if (dup2(cmd->pipe[idx - 1][0], STDIN_FILENO) < 0)
+			fatal_error();
+		if (close(cmd->pipe[idx - 1][0]) < 0)
+			fatal_error();
+		if (execve(command[0], command, envp) < 0)
+		{
+			ft_putstr("error: cannot execute ");
+			ft_putstr(command[0]);
+			ft_putstr("\n");
+			exit(1);
+		}
+	}
+}
+
+void	execute_pipe(t_cmd *cmd, char **envp)
+{
+	char	**command;
+	int		i;
+	int		idx;
+
+	i = -1;
+	cmd->pipe_cnt = 0;
+	while (cmd->cmd[++i])
+	{
+		if (strcmp(cmd->cmd[i], "|") == 0)
+			cmd->pipe_cnt++;
+	}
+	if (cmd->pipe_cnt == 0)
+	{
+		execute_no_pipe(cmd, cmd->cmd, envp);
+		return ;
+	}
+	cmd->pipe = (int **)malloc(sizeof(int *) * (cmd->pipe_cnt));
+	if (cmd->pipe == NULL)
+		fatal_error();
+	i = -1;
+	while (++i < cmd->pipe_cnt)
+	{
+		cmd->pipe[i] = (int *)malloc(sizeof(int) * 2);
+		if (cmd->pipe[i] == NULL || pipe(cmd->pipe[i]) < 0)
+			fatal_error();
+	}
+	cmd->pid = (pid_t *)malloc(sizeof(pid_t) * (cmd->pipe_cnt + 1));
+	if (cmd->pid == NULL)
+		fatal_error();
+	i = 0;
+	idx = 0;
+	command = NULL;
+	while (cmd->cmd[i])
+	{
+		if (strcmp(cmd->cmd[i], "|") == 0 || cmd->cmd[i + 1] == NULL)
+		{
+			if (cmd->cmd[i + 1] == NULL)
+				command = ft_strjoin(command, cmd->cmd[i]);
+			if (idx == 0)
+				fork_first(cmd, command, envp, idx);
+			else if (idx == cmd->pipe_cnt)
+				fork_last(cmd, command, envp, idx);
+			else
+				fork_mid(cmd, command, envp, idx);
+			ft_free(command);
+			command = NULL;
+			idx++;
+		}
+		else
+			command = ft_strjoin(command, cmd->cmd[i]);
+		i++;
+	}
+	i = -1;
+	while (++i < cmd->pipe_cnt)
+	{
+		if (close(cmd->pipe[i][0]) < 0 || close(cmd->pipe[i][1]) < 0)
+			fatal_error();
+	}
+	i = -1;
+	while (++i <= cmd->pipe_cnt)
+	{
+		if (waitpid(cmd->pid[i], 0, 0) < 0)
+			fatal_error();
+	}
+	ft_free(command);
+	free(cmd->pid);
+	i = -1;
+	while (++i < cmd->pipe_cnt)
+		free(cmd->pipe[i]);
+	free(cmd->pipe);
+}
+
+int	main(int argc, char **argv, char **envp)
+{
+	t_cmd	cmd;
 	int		index;
+	int		pipe_cnt;
 
 	if (argc < 2)
 		return (0);
 	if (strcmp(argv[1], "cd") == 0)
-		exe_cd(argv);
+		exe_cd(argc, argv);
 	else
 	{
 		index = 1;
-		cmd = NULL;
-		while (index < argc)
+		pipe_cnt = 0;
+		cmd.pid = NULL;
+		cmd.cmd = NULL;
+		while (++index < argc)
 		{
-			if (strcmp(argv[index], ";") == 0 || index + 1 == argc)
+			if (strcmp(argv[index], "|") == 0)
+				pipe_cnt++;
+		}
+		if (pipe_cnt == 0)
+		{
+			cmd.cmd = ft_strscpy_index(argv, 1, argc);
+			display_str(cmd.cmd);
+			execute_no_pipe(&cmd, cmd.cmd, envp);
+			return (0);
+		}
+		index = 0;
+		while (argv[++index] && pipe_cnt > 0)
+		{
+			if (strcmp(argv[index], ";") == 0 || argv[index + 1] == NULL)
 			{
-				exe_cmd(cmd, env);
-				ft_free(cmd);
-				cmd = NULL;
+				if (argv[index + 1] == NULL)
+					cmd.cmd = ft_strjoin(cmd.cmd, argv[index]);
+				execute_pipe(&cmd, envp);
+				ft_free(cmd.cmd);
+				cmd.cmd = NULL;
 			}
 			else
-				cmd = ft_strjoin(cmd, argv[index]);
-			index++;
+			{
+				cmd.cmd = ft_strjoin(cmd.cmd, argv[index]);
+			}
 		}
 	}
 	return (0);

@@ -1,6 +1,7 @@
 NAME = microshell
 
-SRCS_NAME = ./test
+SRCS_NAME = ./test \
+			./display \
 
 SRCS_BONUS_NAME = ./microshell
 
@@ -13,7 +14,6 @@ OBJS = $(addsuffix .o, $(SRCS_NAME))
 OBJS_BONUS = $(addsuffix .o, $(SRCS_BONUS_NAME))
 
 CC		=	cc
-CFLAGS	=	-Wall -Werror -Wextra
 
 ifdef BONUS
 	OBJS_ALL = $(OBJS_BONUS)
@@ -24,7 +24,7 @@ endif
 all:	$(NAME)
 
 $(NAME):	$(OBJS_ALL)
-			$(CC) $(CFLAGS) $(OBJS_ALL) -o $(NAME)
+			$(CC) $(OBJS_ALL) -o $(NAME)
 
 %.o : %.c
 			$(CC) $(CFLAGS) -c $< -o $@
