@@ -6,7 +6,7 @@
 /*   By: chanson <chanson@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/25 19:40:51 by chanson           #+#    #+#             */
-/*   Updated: 2023/03/25 19:52:40 by chanson          ###   ########.fr       */
+/*   Updated: 2023/03/27 12:20:59 by chanson          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,10 @@ void	display_str(char **str)
 
 	i = 0;
 	if (str == NULL)
+	{
+		printf("NULL\n");
 		return ;
+	}
 	while (1)
 	{
 		printf("%d: %s\n", i, str[i]);

@@ -26,13 +26,16 @@ char	*ft_strcpy(char *str)
 int	main(int argc, char **argv, char **envp)
 {
 	char	**cmd;
+	int		fd;
+	char	*path;
 
-	cmd = (char **)malloc(sizeof(char *) * 3);
-	cmd[0] = ft_strcpy("/bin/echo");
-	cmd[1] = ft_strcpy("-l");
-	cmd[2] = NULL;
-	printf("%s\n", cmd[0]);
-	execve(cmd[0], cmd, envp);
-	printf("error\n");
+	fd = dup(STDIN_FILENO);
+	printf("fd: %d\n", fd);
+	chdir("~");
+	path = getcwd(NULL, 0);
+	printf("path: %s\n\n", path);
+	if (execve(NULL, NULL, envp) < 0)
+		printf("error\n");
+	printf("err\n");
 	return (0);
 }

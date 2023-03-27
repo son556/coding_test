@@ -1,9 +1,9 @@
 NAME = microshell
 
-SRCS_NAME = ./test \
+SRCS_NAME = ./microshell \
 			./display \
 
-SRCS_BONUS_NAME = ./microshell
+SRCS_BONUS_NAME = ./microshell2
 
 SRCS = $(addsuffix .c, $(SRCS_NAME))
 
