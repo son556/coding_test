@@ -9,7 +9,7 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/a.out",
-			"args": ["/bin/ls", "|", "/usr/bin/grep"],
+			"args": [";", ";", "/bin/echo hi man"],
 			"stopAtEntry": true,
 			"cwd": "${fileDirname}",
 			"environment": [],
