@@ -92,6 +92,11 @@ void fixedPoint::setNumber(ll n) {
     setNumber(this->real);
 }
 
+void fixedPoint::setNumber(int n) {
+    this->real = (double)n;
+    setNumber(this->real);
+}
+
 fixedPoint& fixedPoint::operator=(fixedPoint const &ref) {
     this->real = ref.real;
     this->sign = ref.sign;
@@ -329,6 +334,19 @@ bool fixedPoint::operator>=(fixedPoint ref) {
     return comThis >= comRef;
 }
 
+bool fixedPoint::same(fixedPoint ref, double bias) {
+    if ((*this - ref).abs() <= bias)
+        return true;
+    return false;
+}
+
+fixedPoint fixedPoint::abs() {
+    fixedPoint res = *this;
+    if (res.sign == -1)
+        res.sign = 1;
+    return res;
+}
+
 fixedPoint fixedPoint::sin() {
     fixedPoint tmp, res, si, x, x_sqr;
 
@@ -405,5 +423,17 @@ fixedPoint fixedPoint::round() {
 }
 
 fixedPoint fixedPoint::sqrt() {
-    fixedPoint res;
+    fixedPoint mid, start, end, test;
+    end = *this;
+    start = 0;
+    mid = (end + start) / 2;
+    if ((mid * mid - *this).abs() <= 0.000001) return mid;
+    while ((start - end).abs() > 0.000001) {
+        mid = (end + start) / 2;
+        test = (mid * mid - *this).abs();
+        if (test <= 0.000001) break;
+        else if (mid * mid > *this) end = mid;
+        else start = mid;
+    }
+    return mid;
 }

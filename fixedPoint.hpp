@@ -25,6 +25,7 @@ typedef class fixedPoint
         void setNumber(float n);
         void setNumber(double n);
         void setNumber(ll n);
+        void setNumber(int n);
         void showNumber();
         double getReal();
         fixedPoint& operator=(fixedPoint const &ref);
@@ -46,6 +47,8 @@ typedef class fixedPoint
         bool operator> (fixedPoint ref);
         bool operator<= (fixedPoint ref);
         bool operator>= (fixedPoint ref);
+        bool same (fixedPoint ref, double bias);
+        fixedPoint abs();
         fixedPoint sin();
         fixedPoint cos();
         fixedPoint tan();
