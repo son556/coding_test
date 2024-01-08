@@ -111,26 +111,9 @@ void showTest(fixedPoint p1, fixedPoint p2, string str, double a, double b)
 
 int main() 
 {
-    fixedPoint fixFloat;
-    fixedPoint fixFloat2;
-    fixedPoint fixFloat3;
-    fixedPoint res;
-
-    double a = 115.8121007524642;
-    double b = 120.4949011927283;
-    double c = 14.1490756454914;
-    double d = 0.755644;
-    double e = 144;
-
-    showTest(a, b, "*", a, b);
-    fixFloat2 = 2;
-    cout << fixFloat2.getReal() << endl;
-    float t1 = 2;
-    float t2 = 2;
-    float t3 = t1 / (t1 - t2);
-    float t4 = INFINITY;
-    cout << t3 << endl;
-    cout << t3 - t2 << endl;
-    cout << t4 << endl; 
+    int n = 46 + 60 + 33 + 18 + 57 + 49 + 12 + 89 + 82 + 16;
+    cout << n << endl;
+    n = 306 + 311 + 724 + 342 + 431 + 288 + 686 + 389 + 889 + 289;
+    cout << n << endl;
 
 }
