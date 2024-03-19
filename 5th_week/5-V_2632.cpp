@@ -3,6 +3,7 @@
 //#include <bits/stdc++.h>
 // 원형 자료구조 -> 선형 자료 구조
 // 구간쿼리 -> 누적합
+// 쪼개서 전부 구한 후 합칠 수 있는 지 생각해 보자
 using namespace std;
 typedef long long ll;
 

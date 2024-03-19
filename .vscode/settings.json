@@ -90,6 +90,11 @@
         "__memory": "cpp",
         "memory_resource": "cpp",
         "filesystem": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "xiosbase": "cpp",
+        "xtree": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp"
     }
 }

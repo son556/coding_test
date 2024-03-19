@@ -1,0 +1,86 @@
+void put(int y, int x) {
+    int ny = y, nx = x;
+    chess[ny][nx] += 1;
+    while (1) {
+        ny += dy[0];
+        nx += dx[0];
+        if (ny < 0 || nx < 0) break;
+        if (chess[ny][nx])
+            chess[ny][nx] += 1;
+    }
+    ny = y, nx = x;
+    chess[ny][nx] += 1;
+    while (1) {
+        ny += dy[1];
+        nx += dx[1];
+        if (ny >= n || nx < 0) break;
+         if (chess[ny][nx])
+            chess[ny][nx] += 1;
+    }
+    ny = y, nx = x;
+    chess[ny][nx] += 1;
+    while (1) {
+        ny += dy[2];
+        nx += dx[2];
+        if (ny < n || nx >= n) break;
+        if (chess[ny][nx])
+            chess[ny][nx] += 1;
+    }
+    ny = y, nx = x;
+    chess[ny][nx] += 1;
+    while (1) {
+        ny += dy[3];
+        nx += dx[3];
+        if (ny >= n || nx >= n) break;
+         if (chess[ny][nx])
+            chess[ny][nx] += 1;
+    }
+}
+
+void back(int y, int x) {
+    int ny = y, nx = x;
+    chess[ny][nx] -= 1;
+    while (1) {
+        ny += dy[0];
+        nx += dx[0];
+        if (ny < 0 || nx < 0) break;
+        if (chess[ny][nx] > 1)
+            chess[ny][nx] -= 1;
+    }
+    ny = y, nx = x;
+    chess[ny][nx] -= 1;
+    while (1) {
+        ny += dy[1];
+        nx += dx[1];
+        if (ny >= n || nx < 0) break;
+        if (chess[ny][nx] > 1)
+            chess[ny][nx] -= 1;
+    }
+    ny = y, nx = x;
+    chess[ny][nx] -= 1;
+    while (1) {
+        ny += dy[2];
+        nx += dx[2];
+        if (ny < n || nx >= n) break;
+        if (chess[ny][nx] > 1)
+            chess[ny][nx] -= 1;
+    }
+    ny = y, nx = x;
+    chess[ny][nx] -= 1;
+    while (1) {
+        ny += dy[3];
+        nx += dx[3];
+        if (ny >= n || nx >= n) break;
+        if (chess[ny][nx] > 1)
+            chess[ny][nx] -= 1;
+    }
+}
+
+void display() {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++)
+            cout << chess[i][j] << ' ';
+        cout << '\n';
+    }
+    cout << '\n';
+}
